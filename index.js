@@ -20,12 +20,26 @@ async function run() {
         await client.connect();
         const database = client.db(process.env.DB_NAME);
         const productsCollection = database.collection('products');
+        const trainingsCollection = database.collection('trainings');
+        const successesCollection = database.collection('successes');
 
         // GET API
         app.get('/products', async (req, res) => {
             const cursor = productsCollection.find({});
             const products = await cursor.toArray();
             res.send(products);
+        });
+        // GET API
+        app.get('/trainings', async (req, res) => {
+            const cursor = trainingsCollection.find({});
+            const trainings = await cursor.toArray();
+            res.send(trainings);
+        });
+        // GET API
+        app.get('/successes', async (req, res) => {
+            const cursor = successesCollection.find({});
+            const successes = await cursor.toArray();
+            res.send(successes);
         });
     }
     finally {
