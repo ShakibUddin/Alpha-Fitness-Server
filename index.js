@@ -22,6 +22,7 @@ async function run() {
         const productsCollection = database.collection('products');
         const trainingsCollection = database.collection('trainings');
         const successesCollection = database.collection('successes');
+        const usersCollection = database.collection('users');
 
         // GET API
         app.get('/products', async (req, res) => {
@@ -40,6 +41,31 @@ async function run() {
             const cursor = successesCollection.find({});
             const successes = await cursor.toArray();
             res.send(successes);
+        });
+        // POST API(Check if a user exists in database)
+        app.post('/checkusers', async (req, res) => {
+            // Query for a users email
+            const query = { email: req.body.email };
+            const user = await usersCollection.findOne(query);
+            if (user) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
+
+        });
+        // POST API(Check if a user exists in database)
+        app.post('/users', async (req, res) => {
+            // Query for a users email
+            const data = req.body;
+            const insertOperation = await usersCollection.insertOne(data);
+            if (insertOperation.acknowledged) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
         });
     }
     finally {
