@@ -27,50 +27,35 @@ async function run() {
         const membershipsCollection = database.collection('membership');
         const usersCollection = database.collection('users');
         const queriesCollection = database.collection('queries');
+        const purchasesCollection = database.collection('puchases');
 
-        // GET API
-        app.get('/products', async (req, res) => {
-            const cursor = productsCollection.find({});
-            const products = await cursor.toArray();
-            res.send(products);
-        });
-        // GET API
+
+        // GET API - fetching trainings data
         app.get('/trainings', async (req, res) => {
             const cursor = trainingsCollection.find({});
             const trainings = await cursor.toArray();
             res.send(trainings);
         });
-        // GET API
+        // GET API - fetching stories data
         app.get('/stories', async (req, res) => {
             const cursor = storiesCollection.find({});
             const stories = await cursor.toArray();
             res.send(stories);
         });
-        // GET API
+        // GET API - fetching memberships data
         app.get('/memberships', async (req, res) => {
             const cursor = membershipsCollection.find({});
             const memberships = await cursor.toArray();
             res.send(memberships);
         });
-        // GET API
+        // GET API - fetching successes data
         app.get('/successes', async (req, res) => {
             const cursor = successesCollection.find({});
             const successes = await cursor.toArray();
             res.send(successes);
         });
 
-        // POST API
-        app.post('/users', async (req, res) => {
-            const data = req.body;
-            const insertOperation = await usersCollection.insertOne(data);
-            if (insertOperation.acknowledged) {
-                res.send(true);
-            }
-            else {
-                res.send(false);
-            }
-        });
-        // POST API
+        // POST API - saving query in db
         app.post('/queries', async (req, res) => {
             const data = req.body;
             const insertOperation = await queriesCollection.insertOne(data);
@@ -80,6 +65,18 @@ async function run() {
             else {
                 res.send(false);
             }
+        });
+        // POST API - saving purchase in db
+        app.post('/purchase', async (req, res) => {
+            const data = req.body;
+            const insertOperation = await purchasesCollection.insertOne(data);
+            if (insertOperation.acknowledged) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
+
         });
     }
     finally {
