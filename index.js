@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
+const nodemailer = require("nodemailer");
 const ObjectId = require('mongodb').ObjectId;
 const app = express();
 
@@ -100,7 +101,34 @@ async function run() {
             else {
                 res.send(false);
             }
-        })
+        });
+
+        // POST API - getting query reply data
+        app.post('/reply', async (req, res) => {
+            const data = req.body;
+
+            let transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD
+                }
+            });
+
+            // send mail with defined transport object
+            let info = await transporter.sendMail({
+                from: process.env.EMAIL, // sender address
+                to: data.item.email, // list of receivers
+                subject: "Answer to query in Alpha Fitness", // Subject line
+                text: `Query: ${req.body.item.query} \nAnswer: ${req.body.reply}`, // plain text body
+            });
+            if (info.accepted.length > 0) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
+        });
     }
     finally {
         // await client.close();
