@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
+const ObjectId = require('mongodb').ObjectId;
 const app = express();
 
 // middlewares
@@ -22,12 +23,10 @@ async function run() {
         const productsCollection = database.collection('products');
         const trainingsCollection = database.collection('trainings');
         const storiesCollection = database.collection('stories');
-        const specialClassesCollection = database.collection('special-classes');
         const successesCollection = database.collection('successes');
         const membershipsCollection = database.collection('membership');
-        const usersCollection = database.collection('users');
         const queriesCollection = database.collection('queries');
-        const purchasesCollection = database.collection('puchases');
+        const purchasesCollection = database.collection('purchases');
 
 
         // GET API - fetching trainings data
@@ -54,6 +53,18 @@ async function run() {
             const successes = await cursor.toArray();
             res.send(successes);
         });
+        // GET API - fetching queries data
+        app.get('/queries', async (req, res) => {
+            const cursor = queriesCollection.find({});
+            const queries = await cursor.toArray();
+            res.send(queries);
+        });
+        // GET API - fetching purchases data
+        app.get('/purchases', async (req, res) => {
+            const cursor = purchasesCollection.find({});
+            const purchases = await cursor.toArray();
+            res.send(purchases);
+        });
 
         // POST API - saving query in db
         app.post('/queries', async (req, res) => {
@@ -78,6 +89,18 @@ async function run() {
             }
 
         });
+        // DELETE API - delete a booking
+        app.delete('/delete/query/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const deleteOperation = await queriesCollection.deleteOne(query);
+            if (deleteOperation.acknowledged) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
+        })
     }
     finally {
         // await client.close();
