@@ -28,6 +28,8 @@ async function run() {
         const membershipsCollection = database.collection('membership');
         const queriesCollection = database.collection('queries');
         const purchasesCollection = database.collection('purchases');
+        const coachesCollection = database.collection('coaches');
+        const appointmentsCollection = database.collection('appointments');
 
 
         // GET API - fetching trainings data
@@ -87,6 +89,18 @@ async function run() {
         app.post('/purchase', async (req, res) => {
             const data = req.body;
             const insertOperation = await purchasesCollection.insertOne(data);
+            if (insertOperation.acknowledged) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
+
+        });
+        // POST API - saving appoinment in db
+        app.post('/appointment', async (req, res) => {
+            const data = req.body;
+            const insertOperation = await appointmentsCollection.insertOne(data);
             if (insertOperation.acknowledged) {
                 res.send(true);
             }
