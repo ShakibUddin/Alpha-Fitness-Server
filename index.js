@@ -66,7 +66,12 @@ async function run() {
             const purchases = await cursor.toArray();
             res.send(purchases);
         });
-
+        // GET API - fetching coaches data
+        app.get('/coaches', async (req, res) => {
+            const cursor = coachesCollection.find({});
+            const coaches = await cursor.toArray();
+            res.send(coaches);
+        });
         // POST API - saving query in db
         app.post('/queries', async (req, res) => {
             const data = req.body;
