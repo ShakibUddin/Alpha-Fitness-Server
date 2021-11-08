@@ -17,6 +17,25 @@ const port = process.env.PORT || 5000;
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
+const notifyUserWithEmail = async ({ subject, text, userEmail }) => {
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL,
+            pass: process.env.PASSWORD
+        }
+    });
+
+    // send mail with defined transport object
+    let info = await transporter.sendMail({
+        from: process.env.EMAIL, // sender address
+        to: userEmail, // list of receivers
+        subject: subject, // Subject line
+        text: text, // plain text body
+    });
+
+    return info;
+}
 async function run() {
     try {
         await client.connect();
@@ -32,47 +51,53 @@ async function run() {
         const appointmentsCollection = database.collection('appointments');
 
 
-        // GET API - fetching trainings data
+        // GET API - get trainings data
         app.get('/trainings', async (req, res) => {
             const cursor = trainingsCollection.find({});
             const trainings = await cursor.toArray();
             res.send(trainings);
         });
-        // GET API - fetching stories data
+        // GET API - get stories data
         app.get('/stories', async (req, res) => {
             const cursor = storiesCollection.find({});
             const stories = await cursor.toArray();
             res.send(stories);
         });
-        // GET API - fetching memberships data
+        // GET API - get memberships data
         app.get('/memberships', async (req, res) => {
             const cursor = membershipsCollection.find({});
             const memberships = await cursor.toArray();
             res.send(memberships);
         });
-        // GET API - fetching successes data
+        // GET API - get successes data
         app.get('/successes', async (req, res) => {
             const cursor = successesCollection.find({});
             const successes = await cursor.toArray();
             res.send(successes);
         });
-        // GET API - fetching queries data
+        // GET API - get queries data
         app.get('/queries', async (req, res) => {
             const cursor = queriesCollection.find({});
             const queries = await cursor.toArray();
             res.send(queries);
         });
-        // GET API - fetching purchases data
+        // GET API - get purchases data
         app.get('/purchases', async (req, res) => {
             const cursor = purchasesCollection.find({});
             const purchases = await cursor.toArray();
             res.send(purchases);
         });
-        // GET API - fetching coaches data
+        // GET API - get coaches data
         app.get('/coaches', async (req, res) => {
             const cursor = coachesCollection.find({});
             const coaches = await cursor.toArray();
             res.send(coaches);
+        });
+        // GET API - get appointments data
+        app.get('/appointments', async (req, res) => {
+            const cursor = appointmentsCollection.find({});
+            const appointments = await cursor.toArray();
+            res.send(appointments);
         });
         // POST API - saving query in db
         app.post('/queries', async (req, res) => {
@@ -98,7 +123,7 @@ async function run() {
 
         });
         // POST API - saving appoinment in db
-        app.post('/appointment', async (req, res) => {
+        app.post('/appointment/book', async (req, res) => {
             const data = req.body;
             const insertOperation = await appointmentsCollection.insertOne(data);
             if (insertOperation.acknowledged) {
@@ -121,27 +146,45 @@ async function run() {
                 res.send(false);
             }
         });
+        // DELETE API - delete an appointment
+        app.delete('/delete/appointment/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const deleteOperation = await appointmentsCollection.deleteOne(query);
+            if (deleteOperation.acknowledged) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
+        });
 
         // POST API - getting query reply data
         app.post('/reply', async (req, res) => {
             const data = req.body;
 
-            let transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.EMAIL,
-                    pass: process.env.PASSWORD
-                }
+            const info = await notifyUserWithEmail({
+                subject: "Answer to query in Alpha Fitness",
+                text: `Hello, ${data.item.name}\nThank you for contacting us.\nYour query was "${data.item.query}"\nAnswer: ${data.reply}`,
+                userEmail: data.item.email
             });
-
-            // send mail with defined transport object
-            let info = await transporter.sendMail({
-                from: process.env.EMAIL, // sender address
-                to: data.item.email, // list of receivers
-                subject: "Answer to query in Alpha Fitness", // Subject line
-                text: `Query: ${req.body.item.query} \nAnswer: ${req.body.reply}`, // plain text body
+            if (info.accepted?.length > 0) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
+        });
+        // POST API - getting appointment approvement data
+        app.post('/appointment/approve', async (req, res) => {
+            const data = req.body;
+            console.log(data);
+            const info = await notifyUserWithEmail({
+                subject: "Appointment Confirmation Status",
+                text: `Hello, ${data.userName}\nYour appointment with ${data.coachName}, on ${data.date}, at ${data.time} is approved.\nThank you\nAlpha Fitness`,
+                userEmail: data.userEmail
             });
-            if (info.accepted.length > 0) {
+            if (info.accepted?.length > 0) {
                 res.send(true);
             }
             else {
