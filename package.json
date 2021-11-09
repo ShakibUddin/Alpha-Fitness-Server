@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Alpha fitness backend",
   "repository": {
-    "url": "https://github.com/ShakibUddin/Alpha-Fitness-Server.githttps://github.com/ShakibUddin/Alpha-Fitness-Server"
+    "url": "https://github.com/ShakibUddin/Alpha-Fitness-Server.git"
   },
   "main": "index.js",
   "scripts": {
