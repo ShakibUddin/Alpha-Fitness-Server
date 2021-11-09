@@ -40,7 +40,6 @@ async function run() {
     try {
         await client.connect();
         const database = client.db(process.env.DB_NAME);
-        const productsCollection = database.collection('products');
         const trainingsCollection = database.collection('trainings');
         const storiesCollection = database.collection('stories');
         const successesCollection = database.collection('successes');
@@ -49,57 +48,58 @@ async function run() {
         const purchasesCollection = database.collection('purchases');
         const coachesCollection = database.collection('coaches');
         const appointmentsCollection = database.collection('appointments');
+        const usersCollection = database.collection('users');
 
 
-        // GET API - get trainings data
+        // GET  - get trainings data
         app.get('/trainings', async (req, res) => {
             const cursor = trainingsCollection.find({});
             const trainings = await cursor.toArray();
             res.send(trainings);
         });
-        // GET API - get stories data
+        // GET  - get stories data
         app.get('/stories', async (req, res) => {
             const cursor = storiesCollection.find({});
             const stories = await cursor.toArray();
             res.send(stories);
         });
-        // GET API - get memberships data
+        // GET  - get memberships data
         app.get('/memberships', async (req, res) => {
             const cursor = membershipsCollection.find({});
             const memberships = await cursor.toArray();
             res.send(memberships);
         });
-        // GET API - get successes data
+        // GET  - get successes data
         app.get('/successes', async (req, res) => {
             const cursor = successesCollection.find({});
             const successes = await cursor.toArray();
             res.send(successes);
         });
-        // GET API - get queries data
+        // GET  - get queries data
         app.get('/queries', async (req, res) => {
             const cursor = queriesCollection.find({});
             const queries = await cursor.toArray();
             res.send(queries);
         });
-        // GET API - get purchases data
+        // GET  - get purchases data
         app.get('/purchases', async (req, res) => {
             const cursor = purchasesCollection.find({});
             const purchases = await cursor.toArray();
             res.send(purchases);
         });
-        // GET API - get coaches data
+        // GET  - get coaches data
         app.get('/coaches', async (req, res) => {
             const cursor = coachesCollection.find({});
             const coaches = await cursor.toArray();
             res.send(coaches);
         });
-        // GET API - get appointments data
+        // GET  - get appointments data
         app.get('/appointments', async (req, res) => {
             const cursor = appointmentsCollection.find({});
             const appointments = await cursor.toArray();
             res.send(appointments);
         });
-        // POST API - saving query in db
+        // POST  - saving query in db
         app.post('/queries', async (req, res) => {
             const data = req.body;
             const insertOperation = await queriesCollection.insertOne(data);
@@ -110,7 +110,7 @@ async function run() {
                 res.send(false);
             }
         });
-        // POST API - saving purchase in db
+        // POST  - saving purchase in db
         app.post('/purchase', async (req, res) => {
             const data = req.body;
             const insertOperation = await purchasesCollection.insertOne(data);
@@ -122,7 +122,7 @@ async function run() {
             }
 
         });
-        // POST API - saving appoinment in db
+        // POST  - saving appoinment in db
         app.post('/appointment/book', async (req, res) => {
             const data = req.body;
             const insertOperation = await appointmentsCollection.insertOne(data);
@@ -134,7 +134,7 @@ async function run() {
             }
 
         });
-        // DELETE API - delete a booking
+        // DELETE  - delete a booking
         app.delete('/delete/query/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -146,7 +146,7 @@ async function run() {
                 res.send(false);
             }
         });
-        // DELETE API - delete an appointment
+        // DELETE  - delete an appointment
         app.delete('/delete/appointment/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -159,7 +159,7 @@ async function run() {
             }
         });
 
-        // POST API - getting query reply data
+        // POST  - getting query reply data
         app.post('/reply', async (req, res) => {
             const data = req.body;
 
@@ -175,7 +175,7 @@ async function run() {
                 res.send(false);
             }
         });
-        // POST API - getting appointment approvement data
+        // POST  - getting appointment approvement data
         app.post('/appointment/approve', async (req, res) => {
             const data = req.body;
             console.log(data);
@@ -191,6 +191,21 @@ async function run() {
                 res.send(false);
             }
         });
+
+        //UPSERT - update user if exists or insert new
+        app.put('/user', async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email };
+            const options = { upsert: true };
+            const updateDoc = { $set: user };
+            const upsertOperation = await usersCollection.updateOne(filter, updateDoc, options);
+            if (upsertOperation.acknowledged) {
+                res.send(true);
+            }
+            else {
+                res.send(false);
+            }
+        })
     }
     finally {
         // await client.close();
